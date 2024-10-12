@@ -101,12 +101,12 @@ async function fetchReviews(movieId) {
 
 function displayReviews(reviews) {
     reviewsContainer.innerHTML = reviews.map(review => `
-        <div class="bg-zinc-950 text-white rounded-lg border border-zinc-800 p-4 m-4">
-            <h2 class="text-xl font-semibold ${review.sentiment === 'Positive' ? 'text-green-500' : 'text-red-500'}">${review.author}</h2>
+        <div class="bg-gray-900 text-white rounded-lg border border-gray-800 p-4 m-4">
+            <h2 class="text-xl font-semibold ${review.author_details.rating >= 5 ? 'text-green-400' : 'text-red-400'}">${review.author}</h2>
             <div class="mt-2">
                 <p class="text-sm"><strong>Author Details:</strong></p>
                 <p class="text-sm">Name: ${review.author_details.name || 'N/A'}</p>
-                <p class="text-sm">Username: ${review.author_details.username || 'N/A'}</p>
+                <p class="text-sm">Username: ${review.author_details.username}</p>
                 <p class="text-sm">Rating: ${review.author_details.rating || 'N/A'}</p>
             </div>
             <div class="mt-4">
@@ -115,10 +115,10 @@ function displayReviews(reviews) {
             <div class="mt-4">
                 <p class="text-sm">Created At: ${new Date(review.created_at).toLocaleString()}</p>
                 <p class="text-sm">Updated At: ${new Date(review.updated_at).toLocaleString()}</p>
-                <p class="text-sm">Review URL: <a class="text-blue-500 hover:text-blue-700" href="${review.url}" target="_blank" rel="noopener noreferrer">${review.url}</a></p>
+                <p class="text-sm">Review URL: <a class="text-blue-400 hover:text-blue-600" href="${review.url}" target="_blank" rel="noopener noreferrer">${review.url}</a></p>
             </div>
         </div>
     `).join('');
 }
 
-fetchMovieDetails();
+window.addEventListener('DOMContentLoaded', fetchMovieDetails);
