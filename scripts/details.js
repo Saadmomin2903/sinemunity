@@ -20,10 +20,10 @@ async function fetchMovieDetails() {
         } else {
             const encodedTitle = encodeURIComponent(movieTitle);
             const url = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodedTitle}&language=en-US&page=1&include_adult=false`;
-            
+
             const response = await fetch(url);
             const data = await response.json();
-            
+
             if (data.results && data.results.length > 0) {
                 const movie = data.results[0];
                 displayMovieDetails(movie);
@@ -58,7 +58,7 @@ async function fetchRecommendations(movieId) {
     try {
         const response = await fetch(`${baseUrl}/movie/${movieId}/recommendations?api_key=${apiKey}&language=en-US&page=1`);
         const data = await response.json();
-        
+
         if (data.results && data.results.length > 0) {
             displayRecommendations(data.results.slice(0, 12));
         } else {
@@ -87,7 +87,7 @@ async function fetchReviews(movieId) {
     try {
         const response = await fetch(`${baseUrl}/movie/${movieId}/reviews?api_key=${apiKey}&language=en-US&page=1`);
         const data = await response.json();
-        
+
         if (data.results && data.results.length > 0) {
             displayReviews(data.results.slice(0, 3));
         } else {
@@ -101,27 +101,24 @@ async function fetchReviews(movieId) {
 
 function displayReviews(reviews) {
     reviewsContainer.innerHTML = reviews.map(review => `
-        <div class="bg-gray-800 rounded-lg p-6 mb-6">
-            <div class="flex items-center mb-4">
-                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(review.author)}&background=random" alt="${review.author}" class="w-12 h-12 rounded-full mr-4">
-                <div>
-                    <h3 class="text-lg font-semibold">${review.author}</h3>
-                    <p class="text-gray-400 text-sm">Posted on ${new Date(review.created_at).toLocaleDateString()}</p>
-                </div>
+        <div class="bg-zinc-950 text-white rounded-lg border border-zinc-800 p-4 m-4">
+            <h2 class="text-xl font-semibold ${review.sentiment === 'Positive' ? 'text-green-500' : 'text-red-500'}">${review.author}</h2>
+            <div class="mt-2">
+                <p class="text-sm"><strong>Author Details:</strong></p>
+                <p class="text-sm">Name: ${review.author_details.name || 'N/A'}</p>
+                <p class="text-sm">Username: ${review.author_details.username || 'N/A'}</p>
+                <p class="text-sm">Rating: ${review.author_details.rating || 'N/A'}</p>
             </div>
-            <p class="text-gray-300">${review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content}</p>
-            ${review.content.length > 300 ? `<button class="text-blue-400 mt-2 hover:underline">Read more</button>` : ''}
+            <div class="mt-4">
+                <p class="text-sm leading-7">${review.content.replace(/\r?\n/g, '<br>')}</p>
+            </div>
+            <div class="mt-4">
+                <p class="text-sm">Created At: ${new Date(review.created_at).toLocaleString()}</p>
+                <p class="text-sm">Updated At: ${new Date(review.updated_at).toLocaleString()}</p>
+                <p class="text-sm">Review URL: <a class="text-blue-500 hover:text-blue-700" href="${review.url}" target="_blank" rel="noopener noreferrer">${review.url}</a></p>
+            </div>
         </div>
     `).join('');
-
-    const readMoreButtons = reviewsContainer.querySelectorAll('button');
-    readMoreButtons.forEach((button, index) => {
-        button.addEventListener('click', () => {
-            const reviewContent = reviews[index].content;
-            button.previousElementSibling.textContent = reviewContent;
-            button.style.display = 'none';
-        });
-    });
 }
 
-document.addEventListener('DOMContentLoaded', fetchMovieDetails);
+fetchMovieDetails();
