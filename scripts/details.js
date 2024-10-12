@@ -1,206 +1,120 @@
-window.addEventListener("DOMContentLoaded", async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const movieTitle = urlParams.get("title");
+const movieDetails = document.getElementById('movie-details');
+const recoContainer = document.getElementById('reco');
+const reviewsContainer = document.getElementById('reviews');
 
-  console.log(movieTitle);
+const urlParams = new URLSearchParams(window.location.search);
+const movieTitle = urlParams.get('title');
 
-  if (movieTitle) {
-    const detailsContainer = document.getElementById("movie-details");
+const apiKey = 'aab044a8c8a395ff28b777d2c0f890b1';
+const baseUrl = 'https://api.themoviedb.org/3';
 
-    const movieDetails = localStorage.getItem(movieTitle);
-
-    const movie = JSON.parse(movieDetails);
-
-    if (movie) {
-      detailsContainer.innerHTML = `
-      <div class="relative">
-        <div class="absolute inset-0 z-0">
-          <img src="${movie.poster}" alt="${movie.title}" class="w-full h-full object-cover opacity-50 filter blur-lg">
-        </div>
-        <div class="relative z-10 border-0  flex flex-col md:flex-row gap-10 p-10">
-          <div class="w-full max-w-[350px]">
-            <img src="${movie.poster}" alt="${movie.title}" class="w-full shadow-[0px_0px_20px_black] shadow-black h-auto w-[350px] rounded-lg">
-          </div>
-          <div class="w-full">
-            <div class="p-3 rounded-lg bg-zinc-950/85 shadow-[0px_0px_20px_black] border border-zinc-950/20 text-white">
-              <h2 class="text-4xl font-bold mb-4">${movie.title}</h2>
-              <p class="text-lg mb-4 text-zinc-100">${movie.overview}</p>
-            </div>
-            
-            <div class="bg-zinc-950/85 border shadow-[0px_0px_20px_black] border-zinc-950/20 mt-5 text-white p-2 rounded-full w-[180px]">
-              <span class="font-semibold">Popularity:</span> ${movie.popularity}
-            </div>
-            <div class="bg-zinc-950/85 border shadow-[0px_0px_20px_black] border-zinc-950/20 text-white p-2 rounded-full w-[180px] mt-5">
-              <span class="font-semibold">Rating:</span> ${movie.vote_average}
-            </div>
-          </div>
-        </div>
-      </div>
-      `;
-
-      const recoContainer = document.getElementById("reco");
-
-      for (let i = 0; i < 10; i++) {
-        recoContainer.innerHTML += SkeletonCard();
-      }
-      try {
-        const res = await fetch("https://saadmomin2903--reco.modal.run", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ title: movieTitle }),
-        });
-
-        const data = await res.json();
-        const recommendations = data.recommendations;
-
-        const recoData = new Map();
-        for (let movie of recommendations) {
-          let res = await fetch(
-            `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(
-              movie
-            )}&include_adult=false&language=en-US&page=1`,
-            {
-              headers: {
-                Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhYWIwNDRhOGM4YTM5NWZmMjhiNzc3ZDJjMGY4OTBiMSIsInN1YiI6IjY2MzIyNzJhYzM5MjY2MDEyOTZkMGUwYiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1I-t6H1Iy8BOUZ_14U-uC-QeZCsG0JOxB8l6axB2yXQ",
-              },
-              cache: "force-cache",
-            }
-          );
-
-          const response = await res.json();
-          if (response.results && response.results.length > 0) {
-            const movieData = response.results[0];
-            if (movieData.title !== movieTitle) {
-              recoData.set(movieData.id, {
-                id: movieData.id,
-                title: movieData.title,
-                overview: movieData.overview,
-                poster: `https://image.tmdb.org/t/p/w500${movieData.poster_path}`,
-                popularity: movieData.popularity,
-                vote_average: movieData.vote_average,
-              });
-            }
-          }
-        }
-
-        console.log(recoData);
-
-        const arrData = Array.from(recoData.values());
-        recoContainer.innerHTML = "";
-
-        if (arrData.length < 1) {
-          recoContainer.innerHTML += `<div class="w-full h-[300px] rounded-md bg-zinc-900 p-5 flex justify-center items-center"><h1 class="text-3xl font-semibold text-zinc-400">No recommendations :(</h1></div>`;
-        }
-        arrData.forEach((movie) => {
-          localStorage.setItem(movie.title, JSON.stringify(movie));
-          recoContainer.innerHTML += MovieCard(movie);
-        });
- 
-const reviewContainer = document.getElementById("reviews");
-
-        reviewContainer.innerHTML = `<div class="w-full h-[300px] rounded-md bg-zinc-900 p-5 flex justify-center items-center"><h1 class="text-3xl font-semibold text-zinc-400">Loding reviews...</h1></div>`;
-        const r = await fetch('https://saadmomin2903--reviews.modal.run', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            title: movieTitle,
-            movie_id: movie.id
-          }),
-          cache: "force-cache"
-        });
-
-        const reviews = await r.json();
-
+async function fetchMovieDetails() {
+    try {
+        const response = await fetch(`${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(movieTitle)}&language=en-US&page=1&include_adult=false`);
+        const data = await response.json();
         
-
-        reviewContainer.innerHTML = "";
-        if(reviews.length > 0) {
-           reviews.forEach((review) => {
-                reviewContainer.innerHTML += ReviewComponent(review)
-           })
-        }else{
-          reviewContainer.innerHTML="";
-          reviewContainer.innerHTML+= `<div class="w-full h-[300px] rounded-md bg-zinc-900 p-5 flex justify-center items-center"><h1 class="text-3xl font-semibold text-zinc-400">No reviews :(</h1></div>`;
+        if (data.results && data.results.length > 0) {
+            const movie = data.results[0];
+            displayMovieDetails(movie);
+            fetchRecommendations(movie.id);
+            fetchReviews(movie.id);
+        } else {
+            movieDetails.innerHTML = '<p class="text-xl">Movie not found.</p>';
         }
-
-
-        console.log(reviews);
-      } catch (error) {
-        console.error("Error fetching movie details:", error);
-        // detailsContainer.innerHTML += "<p>Error fetching movie details.</p>";
-      }
-    } else {
-      detailsContainer.innerHTML += "<p>No movie details found.</p>";
+    } catch (error) {
+        console.error('Error fetching movie details:', error);
+        movieDetails.innerHTML = '<p class="text-xl">Error fetching movie details. Please try again later.</p>';
     }
-  } else {
-    const detailsContainer = document.getElementById("movie-details");
-    detailsContainer.innerHTML = "<p>No movie title provided in the URL.</p>";
-  }
-});
+}
 
-const MovieCard = (movie) => {
-  return `
-      <div class="bg-zinc-950 text-white rounded-lg border border-zinc-800 p-4 m-4 w-64">
-        <div class="overflow-hidden rounded-lg">
-          <img class="rounded-lg w-full h-80 object-cover hover:scale-110 transition-all duration-300" src="${movie.poster}" alt="${movie.title}">
-        </div>
-        <div class="mt-4">
-          <p class="text-xl hover:text-blue-600 cursor-pointer font-semibold movie-title">${movie.title}</p>
-          <div class="mt-2 text-zinc-300">
-            <span class="block">Popularity: ${movie.popularity}</span>
-            <span class="block">Rating: ${movie.vote_average}</span>
-          </div>
-        </div>
-      </div>
-    `;
-};
-
-const ReviewComponent = (review) => {
-  return `
-    <div class="bg-zinc-950 text-white rounded-lg border border-zinc-800 p-4 m-4">
-      <h2 class="text-xl font-semibold ${review.sentiment==='Positive' ? 'text-green-600' : 'text-red-600'}">${review.author}</h2>
-      <div class="mt-2">
-        <p class="text-sm"><strong>Author Details:</strong></p>
-        <p class="text-sm">Name: ${review.author_details.name}</p>
-        <p class="text-sm">Username: ${review.author_details.username}</p>
-        <p class="text-sm">Rating: ${review.author_details.rating}</p>
-      </div>
-      <div class="mt-4">
-        <p class="text-sm leading-7">${review.content.replace(/\\r\\n/g, '<br>')}</p>
-      </div>
-      <div class="mt-4">
-        <p class="text-sm">Created At: ${new Date(review.created_at).toLocaleString()}</p>
-        <p class="text-sm">Updated At: ${new Date(review.updated_at).toLocaleString()}</p>
-        <p class="text-sm">Review URL: <a class="text-blue-500 hover:text-blue-700" href="${review.url}" target="_blank" rel="noopener noreferrer">${review.url}</a></p>
-      </div>
-    </div>
-  `;
-};
-
-const SkeletonCard = () => {
-  return `
-        <div class=" rounded-lg border border-zinc-800 bg-zinc-950 p-4 m-4 w-64">
-          <div class="overflow-hidden h-80 skl rounded-lg">
-          </div>
-          <div class="mt-4">
-            <p class="text-xl hover:text-blue-600 cursor-pointer font-semibold movie-title"></p>
-            <div class="mt-2 flex flex-col gap-5 text-gray-700">
-              <span class="block h-10 skl rounded-xl"></span>
-              <span class="block h-10 skl rounded-xl"></span>
+function displayMovieDetails(movie) {
+    const posterPath = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '/path/to/placeholder-image.jpg';
+    movieDetails.innerHTML = `
+        <div class="flex flex-col md:flex-row gap-8">
+            <img src="${posterPath}" alt="${movie.title}" class="w-full md:w-1/3 rounded-lg shadow-lg">
+            <div class="flex-1">
+                <h1 class="text-4xl font-bold mb-4">${movie.title}</h1>
+                <p class="text-gray-300 mb-4">${movie.overview}</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <p><span class="font-semibold">Release Date:</span> ${movie.release_date}</p>
+                    <p><span class="font-semibold">Rating:</span> ${movie.vote_average}/10</p>
+                    <p><span class="font-semibold">Popularity:</span> ${movie.popularity}</p>
+                    <p><span class="font-semibold">Original Language:</span> ${movie.original_language}</p>
+                </div>
             </div>
-          </div>
         </div>
-      `;
-};
+    `;
+}
 
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("movie-title")) {
-    console.log(e.target.textContent);
-    window.location.href = `/pages/details.html?title=${e.target.textContent}`;
-  }
-});
+async function fetchRecommendations(movieId) {
+    try {
+        const response = await fetch(`${baseUrl}/movie/${movieId}/recommendations?api_key=${apiKey}&language=en-US&page=1`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            displayRecommendations(data.results.slice(0, 5));
+        } else {
+            recoContainer.innerHTML = '<p class="text-xl">No recommendations available.</p>';
+        }
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        recoContainer.innerHTML = '<p class="text-xl">Error fetching recommendations. Please try again later.</p>';
+    }
+}
+
+function displayRecommendations(movies) {
+    recoContainer.innerHTML = movies.map(movie => `
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" class="w-full h-64 object-cover">
+            <div class="p-4">
+                <h3 class="text-lg font-semibold mb-2">${movie.title}</h3>
+                <p class="text-sm text-gray-300 mb-2">Rating: ${movie.vote_average}/10</p>
+               <a href="details.html?title=${encodeURIComponent(movie.title)}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">View Details</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function fetchReviews(movieId) {
+    try {
+        const response = await fetch(`${baseUrl}/movie/${movieId}/reviews?api_key=${apiKey}&language=en-US&page=1`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            displayReviews(data.results.slice(0, 3));
+        } else {
+            reviewsContainer.innerHTML = '<p class="text-xl">No reviews available.</p>';
+        }
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        reviewsContainer.innerHTML = '<p class="text-xl">Error fetching reviews. Please try again later.</p>';
+    }
+}
+
+function displayReviews(reviews) {
+    reviewsContainer.innerHTML = reviews.map(review => `
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <div class="flex items-center mb-4">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(review.author)}&background=random" alt="${review.author}" class="w-12 h-12 rounded-full mr-4">
+                <div>
+                    <h3 class="text-lg font-semibold">${review.author}</h3>
+                    <p class="text-gray-400 text-sm">Posted on ${new Date(review.created_at).toLocaleDateString()}</p>
+                </div>
+            </div>
+            <p class="text-gray-300">${review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content}</p>
+            ${review.content.length > 300 ? `<button class="text-blue-400 mt-2 hover:underline">Read more</button>` : ''}
+        </div>
+    `).join('');
+
+    // Add event listeners for "Read more" buttons
+    const readMoreButtons = reviewsContainer.querySelectorAll('button');
+    readMoreButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            const reviewContent = reviews[index].content;
+            button.previousElementSibling.textContent = reviewContent;
+            button.style.display = 'none';
+        });
+    });
+}
+
+fetchMovieDetails();
