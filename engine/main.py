@@ -33,7 +33,7 @@ cosine_sim_matrix = None
 @web_endpoint(label="all", method="POST")
 async def fetch_all_movies() -> List[Dict]:
     BASE_URL = "https://api.themoviedb.org/3"
-    MAX_PAGES = 500
+    MAX_PAGES = 5000
     endpoint = "/discover/movie"
     params = {
         "api_key": os.environ["tmdb_key"],
