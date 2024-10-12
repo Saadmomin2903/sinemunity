@@ -72,10 +72,12 @@ async def fetch_all_movies() -> List[Dict]:
 def get_movie_dataframe():
     try:
         all_movies_response = requests.post("https://saadmomin2903--all.modal.run/")
-        all_movies_response.raise_for_status()  # Raise an exception for bad responses
+        all_movies_response.raise_for_status()
         all_movies_data = all_movies_response.json()
         df = pd.DataFrame(all_movies_data)
         df["overview"] = df["overview"].fillna("")
+        # Combine title and overview
+        df["content"] = df["title"] + " " + df["overview"]
         return df
     except requests.RequestException as e:
         logging.error(f"Error fetching movie data: {e}")
@@ -86,7 +88,7 @@ def get_cosine_sim():
     try:
         df = get_movie_dataframe()
         tfidf = TfidfVectorizer(stop_words="english")
-        tfidf_matrix = tfidf.fit_transform(df["overview"])
+        tfidf_matrix = tfidf.fit_transform(df["content"])
         return linear_kernel(tfidf_matrix, tfidf_matrix)
     except Exception as e:
         logging.error(f"Error calculating cosine similarity: {e}")
