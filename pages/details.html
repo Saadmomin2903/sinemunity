@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Search Results - Cinemunity</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Movie Details - Cinemunity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white font-sans">
     <nav class="sticky top-0 z-50 bg-gray-900 bg-opacity-90">
@@ -19,9 +19,16 @@
         </div>
     </nav>
     <main class="w-full flex flex-col items-center py-8">
-        <h1 id="search-title" class="text-3xl font-bold mb-8">Search Results</h1>
-        <div id="movies" class="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4"></div>
+        <div id="movie-details" class="w-full max-w-4xl px-4 mb-12"></div>
+        <div class="w-full max-w-4xl px-4">
+            <h2 class="text-2xl font-bold mb-4">Recommendations</h2>
+            <div id="reco" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </div>
+        <div class="w-full max-w-4xl px-4 mt-12">
+            <h2 class="text-2xl font-bold mb-4">Reviews</h2>
+            <div id="reviews" class="space-y-6"></div>
+        </div>
     </main>
-    <script src="../scripts/result.js"></script>
+    <script src="../scripts/details.js"></script>
 </body>
 </html>

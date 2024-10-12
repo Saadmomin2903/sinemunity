@@ -106,9 +106,9 @@ const SkeletonCard = () => {
       `;
   };
 
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("movie-title")) {
-    console.log(e.target.textContent);
-    window.location.href = `/pages/details.html?title=${e.target.textContent}`;
-  }
-});
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("movie-title")) {
+      console.log(e.target.textContent);
+      window.location.href = `/pages/details.html?title=${e.target.textContent}`;
+    }
+  });
